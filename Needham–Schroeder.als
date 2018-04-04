@@ -1,7 +1,7 @@
 -- Time stuff = fix for MitM attack
 open util/ordering[Time] -- time dependent
 
-sig Time{}
+sig Time {}
 
 -- all users have one public key and one private key
 sig User {
@@ -21,7 +21,10 @@ sig Key extends SendableValue {}
 
 pred init(t:Time) {
 		-- All user public/private keys are unique
-		all disj u1, u2 : Users | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey 
+		all disj u1, u2 : Users | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
+
+		-- A user's public and private keys are not the same
+		all u: Users | u.publicKey != u.privateKey 
 }
 
 sig Message {
