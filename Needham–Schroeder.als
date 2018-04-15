@@ -21,10 +21,10 @@ sig Key extends SendableValue {}
 
 pred init(t:Time) {
 		-- All user public/private keys are unique
-		all disj u1, u2 : Users | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
+		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
 
 		-- A user's public and private keys are not the same
-		all u: Users | u.publicKey != u.privateKey 
+		all u: User | u.publicKey != u.privateKey 
 }
 
 sig Message {
@@ -33,3 +33,5 @@ sig Message {
 	payload : one SendableValue,
 	encrypted: one Key -- each message is encrypted with a public key
 }
+
+run {}
