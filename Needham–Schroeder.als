@@ -11,7 +11,7 @@ sig Entity {
 sig User extends Entity {
 	privateKey : one Key,
 	publicKey : one Key,
-	messagesRecieved: set Message 
+	messagesReceived: set Message 
 }
 
 -- Only one Alice/Bob user
@@ -55,18 +55,21 @@ sig Request extends SendableValue {
 
 sig ExchangeKey extends Event {} {
 	-- A send S request for B key
-	let t' = t.next {
+	--let t' = t.next {
 	some r : Request | some m : Message | r.requestedContact = Bob and m.sender = Alice 
 																	and m.reciever = Server and m.payload =  r
 																	and m.encrypted = Alice.privateKey
-																	and Server.messagesRecieved = Server.messagesRecieved + m
-	}
+																	and Server.messagesReceived = Server.messagesReceived + m
 	
 	-- S responds with B's public key and identity, signed with server's private key
+	some m: Message | m.sender = Server and m.receiver = Alice and m.payload = (Server.contactList)[Bob]
+									and m.encrypted = Server.privateKey
 
+	-- A verifies with S's public key and stores B's public key
+	
 
-	Alice.contactList.post = Alice.contactList.pre + (Bob -> Server.contactList.Bob) 
-	Bob.contactList.post = Bob.contactList.pre + (Alice -> Server.contactList.Alice)
+	Alice.contactList = Alice.contactList + (Bob -> (Server.contactList)[Bob]) 
+	Bob.contactList = Bob.contactList + (Alice -> (Server.contactList[Alice]))
 }
 
 sig Send extends Event {} {
