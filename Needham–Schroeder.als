@@ -31,7 +31,7 @@ pred init(t:Time) {
 		#{Key} = #{User} + #{User}
 
 		-- All user public/private keys are unique
-		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
+		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey and u1.publicKey != u2.privateKey and u2.publicKey != u1.privateKey
 
 		-- A user's public and private keys are not the same
 		all u: User | u.publicKey != u.privateKey 
@@ -91,4 +91,4 @@ fact Traces {
 }
 
 
-run {} for 1 Time, 6 Key, 6 SendableValue, 6 Message
+run {} for 1 Time, 12 Key, 12 SendableValue, 12 Message
