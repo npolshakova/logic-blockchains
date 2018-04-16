@@ -3,14 +3,14 @@ open util/ordering[Time] -- time dependent
 
 sig Time {}
 
-sig Entity {
+abstract sig Entity {
 	contactList: set ((User -> Key) -> Time)
 }
 
 -- all users have one public key and one private key
-sig User extends Entity {
-	privateKey : one  Key,
-	publicKey :  one Key,
+abstract sig User extends Entity {
+	privateKey :  Key,
+	publicKey :   Key,
 	messagesReceived: set (Message -> Time) 
 }
 -- Only one Alice/Bob user
@@ -23,10 +23,13 @@ one sig Eve extends User {}
 -- Server
 one sig Server extends User {}
 
-sig SendableValue {}
+abstract sig SendableValue {}
 sig Key extends SendableValue {}
 
 pred init(t:Time) {
+		-- number of keys = number of user * 2
+		#{Key} = #{User} + #{User}
+
 		-- All user public/private keys are unique
 		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
 
@@ -41,11 +44,6 @@ sig Message {
  	reciever :  one User,
 	payload : one SendableValue,
 	encrypted: one Key -- each message is encrypted with a public key
-}
-
-abstract sig Event {
-	pre, post: Time,
-	message : Message
 }
 
 sig Request extends SendableValue {
@@ -86,14 +84,6 @@ pred ExchangeKey(pre, post: Time) {
 	Bob.contactList = Bob.contactList + (Alice -> (Server.contactList)[Alice])
 }
 
-sig Send extends Event {} {
- 
-}
-
-
-sig Recieve extends Event {} {
-
-}
 
 fact Traces {
 	-- INITIAL STATE
@@ -101,4 +91,4 @@ fact Traces {
 }
 
 
-run {}
+run {} for 1 Time, 6 Key, 6 SendableValue, 6 Message
