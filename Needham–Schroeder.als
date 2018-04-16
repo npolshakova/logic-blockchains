@@ -8,6 +8,7 @@ sig User {
 	privateKey : one Key,
 	publicKey : one Key
 }
+
 -- Only one Alice/Bob user
 one sig Alice extends User {}
 one sig Bob extends User {}
