@@ -4,8 +4,8 @@ sig Time {}
 
 sig Block {
 	parent: lone Block,
-	child: set Block
-	payload: seq Transaction
+	child: set Block,
+	payload: seq Transaction,
 	hash: one Hash
 }
 
