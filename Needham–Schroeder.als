@@ -24,15 +24,16 @@ one sig Eve extends User {}
 -- Server
 one sig Server extends User {}
 
-sig SendableValue {}
+abstract sig SendableValue {}
 sig Key extends SendableValue {}
 
 pred init(t:Time) {
+		-- number of keys = number of user * 2
+		#{Key} = #{User} + #{User}
+
 		-- All user public/private keys are unique
-		--all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
-		Alice.privateKey != Bob.privateKey
-		Alice.privateKey != Eve.privateKey
-		Bob.privateKey != Eve.privateKey
+		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey
+											and u1.privateKey != u2.publicKey and u2.privateKey != u1.publicKey
 
 		-- A user's public and private keys are not the same
 		all u: User | u.publicKey != u.privateKey 
@@ -45,11 +46,6 @@ sig Message {
  	reciever :  one User,
 	payload : one SendableValue,
 	encrypted: one Key -- each message is encrypted with a public key
-}
-
-abstract sig Event {
-	pre, post: Time,
-	message : Message
 }
 
 sig Request extends SendableValue {
@@ -90,14 +86,6 @@ pred ExchangeKey(pre, post: Time) {
 	Bob.contactList = Bob.contactList + (Alice -> (Server.contactList)[Alice])
 }
 
-sig Send extends Event {} {
- 
-}
-
-
-sig Recieve extends Event {} {
-
-}
 
 fact Traces {
 	-- INITIAL STATE
@@ -105,4 +93,4 @@ fact Traces {
 }
 
 
-run {}
+run {} for 1 Time, 12 Key, 12 SendableValue, 6 Message
