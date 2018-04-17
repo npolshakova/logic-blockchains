@@ -1,8 +1,8 @@
 # logic-blockchains
 Let's get down to business...
 
-Setup: Instal alloy (http://alloytools.org/download.html)
+Setup: Install alloy (http://alloytools.org/download.html)
 
-Blockchain: 
+Blockchain: Super interesting blockchain stuff
 
-Needham-Schroeder:
+Needham-Schroeder: Super interesting key stuff
