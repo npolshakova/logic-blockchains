@@ -4,13 +4,14 @@ open util/ordering[Time] -- time dependent
 sig Time {}
 
 abstract sig Entity {
-	contactList: set ((User -> one Key) -> Time)
+	contactList: set ((User -> Key) -> Time)
 }
 
 -- all users have one public key and one private key
 abstract sig User extends Entity {
-	privateKey :  Key,
-	publicKey :   Key,
+	privateKey : one Key,
+	publicKey :  one Key,
+	nonce : one Nonce,
 	messagesReceived: set (Message -> Time) 
 }
 -- Only one Alice/Bob user
@@ -33,14 +34,14 @@ pred init(t:Time) {
 		-- All user public/private keys are unique
 		all disj u1, u2 : User | u1.privateKey != u2.privateKey and u1.publicKey != u2.publicKey 
 											and u1.publicKey != u2.privateKey and u2.publicKey != u1.privateKey
-									--		and (u1 != Server implies u1.publicKey in Server.contactList.t[u1]) 
-									--		and (u2 != Server implies u2.publicKey in Server.contactList.t[u2])
 
 		-- A user's public and private keys are not the same
 		all u: User | u.publicKey != u.privateKey 
 
 		-- Only the server is in the user's contact list
-		all u: User - Server | (Server -> Server.publicKey) in u.contactList.t and #{u.contactList.t} = 1
+		all u: User - Server | (Server -> Server.publicKey) = u.contactList.t 
+										and u.publicKey = Server.contactList.t[u]
+
 }
 
 sig Message {
@@ -50,6 +51,13 @@ sig Message {
 	encrypted: one Key -- each message is encrypted with a public key
 }
 
+fact {
+	-- the sender is never the reciever and vice versa
+	all m : Message | m.sender != m.reciever
+	-- users never send their private keys 
+	all m : Message | some u : User | m.payload != u.privateKey
+}
+
 sig Request extends SendableValue {
 	requestedContact: one User
 }
@@ -57,12 +65,27 @@ sig Request extends SendableValue {
 -- random N
 sig Nonce extends SendableValue {}
 
+-- nonces are random
+fact {
+	all disj n1, n2 : Nonce | n1 != n2
+}
+
+sig ProofNonce extends SendableValue {
+	decodedNonce: Nonce,
+	newNonce : Nonce
+}
+
 pred verify(priv, pub : Key) {
 	some u : User | u.privateKey = priv and u.publicKey = pub
 }
 
+pred canDecode(user : User, message : Message) {
+	user.publicKey = message.encrypted
+}
+
 
 pred ExchangeKey(pre, post: Time) {
+	-- TODO: make generic for user1, user2. Abstract out Server request and response
 
 	-- A send S request for B key
 	some r : Request | some m : Message | r.requestedContact = Bob and m.sender = Alice 
@@ -78,23 +101,55 @@ pred ExchangeKey(pre, post: Time) {
 																	and verify[m.encrypted, Alice.contactList[Server].pre] 
 																	and Alice.contactList.post = Alice.contactList.pre + (Bob -> m.payload)
 
---	let m = Message {
-		 --m.sender = Server 
-		--and m.reciever = Alice and m.payload =  (Server.contactList)[Bob].pre and m.encrypted = Server.privateKey 
-		--and m in Alice.messagesReceived.post and m not in Alice.messagesReceived.pre and verify[m.encrypted, Alice.contactList[Server].pre]
-		--
-	--}
 
 	-- A sends B a random N initiating contact
-	--some m : Message | m.sender = Alice and m.reciever = Bob and m.payload =  Nonce
-		--															and m.encrypted = Server.privateKey
+	some m : Message | m.sender = Alice and m.reciever = Bob and m.payload = Alice.nonce
+									and m.encrypted = Bob.publicKey
 
-	--Alice.contactList = Alice.contactList + (Bob -> (Server.contactList)[Bob]) 
-	--Bob.contactList = Bob.contactList + (Alice -> (Server.contactList)[Alice])
+
+	--B now knows A wants to communicate, so B requests A's public keys.
+	some r : Request | some m : Message | r.requestedContact = Alice and m.sender = Bob 
+																	and m.reciever = Server and m.payload =  r
+																	and m.encrypted = Server.publicKey 
+																	and Server.messagesReceived.post = Server.messagesReceived.pre + m
+	
+
+	-- S responds with A's public key and identity, signed with server's private key
+	-- B verifying S's message with public key and Takes A's public key and stores it 
+		some m : Message | m.sender = Server and m.reciever = Bob and m.payload =  (Server.contactList)[Alice].pre
+																	and m.encrypted = Server.privateKey 
+																	and Bob.messagesReceived.post = Bob.messagesReceived.pre + m
+																	and verify[m.encrypted, Bob.contactList[Server].pre] 
+																	and Bob.contactList.post = Bob.contactList.pre + (Alice -> m.payload)
+
+	--B chooses a random Nonce, and sends it to A along with A's Nonce to prove ability to decrypt with secret key B.
+	some m : Message | some p : ProofNonce | p.decodedNonce = Bob.messagesReceived.post.payload 
+									and p.newNonce = Bob.nonce
+									and m.sender = Bob and m.reciever = Alice 
+									and m.payload =  p and m.encrypted = Alice.publicKey
+									and Alice.messagesReceived.post = Alice.messagesReceived.pre + m
+
+	-- Alice confirms Bob got the Nonce
+	some m :  Alice.messagesReceived.post |  canDecode[Alice, m] 
+																		and m.payload.decodedNonce = Alice.nonce
+
+	-- Alice sends Bob the decoded Nonce
+	some m : Message | m.payload = Alice.messagesReceived.post.payload.newNonce
+									and m.sender = Alice and m.reciever = Bob 
+									and m.encrypted = Bob.publicKey
+									and Bob.messagesReceived.post = Bob.messagesReceived.pre + m
+
+	--A confirms NB to B, to prove ability to decrypt with KSA
+	some m :  Bob.messagesReceived.post | canDecode[Bob, m]
+																	 and m.payload.decodedNonce = Bob.nonce 
+
 }
 
-pred SendMessage(pre, post: Time, sender, reciever: User, message : Message) {
-
+pred SendMessage(pre, post: Time, s, r: User, m : Message) {
+		--m.sender = r
+		--m.reciever = r 
+		--m.encrypted = r.publicKey
+		--r.messagesReceived.post = r.messagesReceived.pre + m
 }
 
 fact Traces {
