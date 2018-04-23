@@ -93,4 +93,4 @@ fact Traces {
 }
 
 
-run {} for 1 Time, 12 Key, 12 SendableValue, 6 Message
+run {} for 1 Time, 12 Key, 12 SendableValue, 12 Message
