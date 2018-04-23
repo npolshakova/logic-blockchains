@@ -126,6 +126,29 @@ pred ExchangeKey(pre, post: Time) {
 	-- S responds with A's public key and identity, signed with server's private key
 	-- B verifying S's message with public key and Takes A's public key and stores it 
 	responseFromServer[post.next.next.next, post.next.next.next.next, Alice, Bob]
+
+	--B chooses a random Nonce, and sends it to A along with A's Nonce to prove ability to decrypt with secret key B.
+	some m : Message | some p : ProofNonce | p.decodedNonce = Bob.messagesReceived.post.payload 
+									and p.newNonce = Bob.nonce
+									and m.sender = Bob and m.reciever = Alice 
+									and m.payload =  p and m.encrypted = Alice.publicKey
+								--	and Alice.messagesReceived.post.next.next.next.next.next = Alice.messagesReceived.post.next.next.next.next + m
+
+	-- Alice confirms Bob got the Nonce
+	some m :  Alice.messagesReceived.post |  canDecode[Alice, m] 
+																		and m.payload.decodedNonce = Alice.nonce
+
+	-- Alice sends Bob the decoded Nonce
+	some m : Message | m.payload = Alice.messagesReceived.post.payload.newNonce
+									and m.sender = Alice and m.reciever = Bob 
+									and m.encrypted = Bob.publicKey
+									and Bob.messagesReceived.post = Bob.messagesReceived.pre + m
+
+	--A confirms NB to B, to prove ability to decrypt with KSA
+	some m :  Bob.messagesReceived.post | canDecode[Bob, m]
+										--							 and m.payload.decodedNonce = Bob.nonce 
+
+
 }
 
 pred SendMessage(pre, post: Time, s, r: User, m : Message) {}
@@ -143,4 +166,4 @@ fact Traces {
 
 --- RUN ---
 
-run {} for 10 Time, 24 Message, 24 SendableValue,  2 Request
+run {} for 12 Time, 24 Message, 24 SendableValue,  2 Request
