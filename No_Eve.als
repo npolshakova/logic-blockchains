@@ -19,8 +19,8 @@ fact {
 
 -- Two values sent: original decoded nonce and new nonce
 abstract sig ProofNonce extends SendableValue {
-	decodedNonce: Nonce,
-	newNonce : Nonce
+	decodedNonce: one Nonce,
+	newNonce : one Nonce
 }
 
 --- USERS ---
@@ -38,9 +38,6 @@ abstract sig User {
 one sig Alice extends User {}
 one sig Bob extends User {}
 
--- Attacker
-one sig Eve extends User {}
-
 -- Server
 one sig Server extends User {}
 
@@ -57,6 +54,10 @@ abstract sig Request extends SendableValue {
 	requestedContact: one User
 }
 
+fact {
+		all m : Message | m.sender != m.reciever
+}
+
 --- EVENTS ---
 
 -- Initial State
@@ -67,7 +68,7 @@ pred init(t:Time) {
 											and u1.publicKey != u2.privateKey and u2.publicKey != u1.privateKey
 
 		-- A user's public and private keys are not the same
-		all u: User | u.publicKey != u.privateKey
+		all u: User | u.publicKey != u.privateKey and no u.messagesReceived.t
 
 		-- Only the server is in the user's contact list
 		all u: User - Server | (Server -> Server.publicKey) = u.contactList.t 
@@ -130,8 +131,9 @@ pred ExchangeKey(pre, post: Time) {
 									and p.newNonce = Bob.nonce
 									and m.sender = Bob and m.reciever = Alice 
 									and m.payload =  p and m.encrypted = Alice.publicKey
-								--	and Alice.messagesReceived.post.next.next.next.next.next = Alice.messagesReceived.post.next.next.next.next + m
-
+								    and Alice.messagesReceived.(pre.next.next.next.next.next) in Alice.messagesReceived.(post.next.next.next.next.next) 
+									and m in  Alice.messagesReceived.(post.next.next.next.next.next) 
+								
 	-- Alice confirms Bob got the Nonce
 	some m :  Alice.messagesReceived.post |  canDecode[Alice, m] 
 																		and m.payload.decodedNonce = Alice.nonce
@@ -140,20 +142,23 @@ pred ExchangeKey(pre, post: Time) {
 	some m : Message | m.payload = Alice.messagesReceived.post.payload.newNonce
 									and m.sender = Alice and m.reciever = Bob 
 									and m.encrypted = Bob.publicKey
-									and Bob.messagesReceived.post = Bob.messagesReceived.pre + m
+									and Bob.messagesReceived.(pre.next.next.next.next.next.next) in Bob.messagesReceived.(post.next.next.next.next.next.next) 
+									and m in  Bob.messagesReceived.(post.next.next.next.next.next.next) 
+								
 
 	--A confirms NB to B, to prove ability to decrypt with KSA
 	some m :  Bob.messagesReceived.post | canDecode[Bob, m]
-										--							 and m.payload.decodedNonce = Bob.nonce 
+																	 and m.payload = Bob.nonce 
 
 
 }
 
-pred SendMessage(pre, post: Time, s, r: User, m : Message) {
-		m.sender = r
+pred SendMessage(pre, post: Time, s, r: User, m : Message) {	
+		m.sender = s
 		m.reciever = r 
 		m.encrypted = r.publicKey
-		r.messagesReceived.post = r.messagesReceived.pre + m
+		r.messagesReceived.pre in r.messagesReceived.post 
+		m in  r.messagesReceived.post 
 }
 
 --- TRACE ---
@@ -161,7 +166,7 @@ pred SendMessage(pre, post: Time, s, r: User, m : Message) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	ExchangeKey[first, first.next]
+	--ExchangeKey[first, first.next]
 	all t : Time - last | let t' = t.next | 
 		some disj u1, u2 : User | some m : Message |
 		SendMessage[t, t', u1, u2, m]
@@ -169,4 +174,4 @@ fact Traces {
 
 --- RUN ---
 
-run {} for 12 Time, 24 Message, 24 SendableValue,  4 Request
+run {} for 8 Time, 10 Message, 10 SendableValue, 2 Request
