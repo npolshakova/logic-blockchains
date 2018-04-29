@@ -5,7 +5,9 @@ sig Time {}
 
 -- SENDABLE VALUES (KEYS) ---
 
-abstract sig SendableValue {}
+abstract sig SendableValue {
+	verifiedSender: one User
+}
 abstract sig Key extends SendableValue {}
 
 -- random N
@@ -247,6 +249,7 @@ fact Traces {
 
 --- Fact: Check sender
 fact Sender {
+	all m : Message | m.payload.verifiedSender = m.sender
 }
 
 --- RUN ---
