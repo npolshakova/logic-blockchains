@@ -110,51 +110,6 @@ pred initiateContact(t: Time, s, r : User) {
 									and m.encrypted = s.contactList[r].t
 }
 
-pred ExchangeKey(pre, post: Time, user1, user2 : User) {
-
-	-- A send S request for B key
-	requestFromServer[pre, post, user2, user1]
-
-	-- S responds with B's public key and identity, signed with server's private key
-	-- A verifying S's message with public key and Takes B's public key and stores it 
-	responseFromServer[post, post.next, user2, user1]
-
-	-- A sends B a random N initiating contact
-	initiateContact[post.next.next, user1, user2]
-
-	--B now knows A wants to communicate, so B requests A's public keys.
-	requestFromServer[post.next.next, post.next.next.next, user1, user2]
-
-	-- S responds with A's public key and identity, signed with server's private key
-	-- B verifying S's message with public key and Takes A's public key and stores it 
-	responseFromServer[post.next.next.next, post.next.next.next.next, user1, user2]
-
-	--B chooses a random Nonce, and sends it to A along with A's Nonce to prove ability to decrypt with secret key B.
-	some m : Message | some p : ProofNonce | p.decodedNonce = user2.messagesReceived.post.payload 
-									and p.newNonce = user2.nonce
-									and m.sender = user2 and m.reciever = user1 
-									and m.payload =  p and m.encrypted = user1.publicKey
-								    and user1.messagesReceived.(pre.next.next.next.next.next) in user1.messagesReceived.(post.next.next.next.next.next) 
-									and m in  user1.messagesReceived.(post.next.next.next.next.next) 
-								
-	-- Alice confirms Bob got the Nonce
-	some m :  user1.messagesReceived.post |  canDecode[user1, m] 
-																		and m.payload.decodedNonce = user1.nonce
-
-	-- Alice sends Bob the decoded Nonce
-	some m : Message | m.payload = user1.messagesReceived.post.payload.newNonce
-									and m.sender = user1 and m.reciever = user2 
-									and m.encrypted = user2.publicKey
-									and user2.messagesReceived.(pre.next.next.next.next.next.next) in user2.messagesReceived.(post.next.next.next.next.next.next) 
-									and m in  user2.messagesReceived.(post.next.next.next.next.next.next) 
-								
-
-	--A confirms NB to B, to prove ability to decrypt with KSA
-	some m :  user2.messagesReceived.post | canDecode[user2, m]
-																	 and m.payload = user2.nonce 
-
-
-}
 
 pred SendMessage(pre, post: Time, s, r: User, m : Message) {	
 		m.sender = s
@@ -164,60 +119,87 @@ pred SendMessage(pre, post: Time, s, r: User, m : Message) {
 		m in  r.messagesReceived.post 
 }
 
---At the end of the attack, B falsely believes that A is communicating with him, and that NA and NB are known only to A and B.
-pred MitM(pre, post: Time) {	
+--At the end of the attack, B falsely believes that A is communicating with him,
+--and that NA and NB are known only to A and B.
+pred MitM(time1, time2: Time, attacker, victim, normalUser : User) {	
 		--A sends NA to Eve, who decrypts the message with private key of Eve
-		-- A send S request for B key
-		requestFromServer[pre, post, Eve, Alice]
+		requestFromServer[time1, time2, attacker, normalUser]
 
+		let time3 = time2.next {
 		-- S responds with Eve's public key and identity, signed with server's private key
-		-- A verifying S's message with public key and Takes Eve's public key and stores it 
-		responseFromServer[post, post.next, Eve, Alice]
+		-- A verifying S's message with public key and takes Eve's public key and stores it 
+		responseFromServer[time2, time3, attacker, normalUser]
 
+		let time4 = time3.next {
 		-- A sends Eve a random N initiating contact
-		initiateContact[post.next.next, Alice, Eve]
+		initiateContact[time4, normalUser, attacker]
 
+		let time5 = time4.next {
 		--Eve now knows A wants to communicate, so Eve requests A's public keys.
-		requestFromServer[post.next.next, post.next.next.next, Alice, Eve]
+		requestFromServer[time4, time5, normalUser, attacker]
 
+		let time6 = time5.next {
 		-- S responds with A's public key and identity, signed with server's private key
-		-- B verifying S's message with public key and Takes A's public key and stores it 
-		responseFromServer[post.next.next.next, post.next.next.next.next, Alice, Eve]
+		-- Eve verifying S's message with public key and Takes A's public key and stores it 
+		responseFromServer[time5, time6, normalUser, attacker]
 
-		
+		let time7 = time6.next {
 		-- Eve send S request for B key
-		requestFromServer[pre, post, Bob, Eve]
+		requestFromServer[time6, time7, victim, attacker]
 
+		let time8 = time7.next {
 		-- S responds with B's public key and identity, signed with server's private key
 		-- Eve verifying S's message with public key and Takes B's public key and stores it 
-		responseFromServer[post, post.next, Bob, Eve]
+		responseFromServer[time7, time8, victim, attacker]
 
+		let time9 = time8.next {
 		--Eve relays the message to B, pretending that A is communicating:
-		some m : Message | m.sender = Alice and m.reciever = Bob and m.payload = Alice.nonce
-									and m.encrypted = Eve.contactList[Bob].post
+		-- TODO: Alice.nonce decoded
+		some m : Message | m.sender = normalUser and m.reciever = victim and m.payload = normalUser.nonce
+									and m.encrypted =attacker.contactList[victim].(time9)
 
+		let time10 = time9.next {	
 		--B now knows A wants to communicate, so B requests A's public keys.
-		requestFromServer[post.next.next, post.next.next.next, Alice, Bob]
+		requestFromServer[time9, time10, normalUser, victim]
 
+		let time11 = time10.next {
 		-- S responds with A's public key and identity, signed with server's private key
 		-- B verifying S's message with public key and Takes A's public key and stores it 
-		responseFromServer[post.next.next.next, post.next.next.next.next, Alice, Bob]
+		responseFromServer[time10, time11, normalUser, victim]
 
+		let time12 = time11.next {
 		--B sends NB
-		some m : Message | some p : ProofNonce | p.decodedNonce = Bob.messagesReceived.post.payload 
-									and p.newNonce = Bob.nonce
-									and m.sender = Bob and m.reciever = Eve 
-									and m.payload =  p and m.encrypted = Eve.publicKey
-								    and Eve.messagesReceived.(pre.next.next.next.next.next) in Eve.messagesReceived.(post.next.next.next.next.next) 
-									and m in  Eve.messagesReceived.(post.next.next.next.next.next) 
+		some m : Message | some p : ProofNonce | p.decodedNonce = victim.messagesReceived.time10.payload 
+									and p.newNonce = victim.nonce
+									and m.sender = victim and m.reciever = attacker 
+									and m.payload =  p and m.encrypted = attacker.publicKey
+								    and attacker.messagesReceived.(time11) in Eve.messagesReceived.(time12) 
+									and m in  Eve.messagesReceived.(time12) 
 
-		--Eve relays it to A
-		
+		let time13 = time12.next {
+		--Eve relays NB to A
+		some m : Message | some mBob : Eve.messagesReceived.(time12) | 
+										m.payload = mBob.payload
+										and m.sender = Eve and m.reciever = Alice and m.encrypted = Alice.publicKey
 
 		--A decrypts NB and confirms it to Eve, who learns it
+		some m : Message| some mAlice : Alice.messagesReceived.(time12) | 
+																		canDecode[Alice, mAlice] 
+																		and mAlice.payload.decodedNonce = Bob.nonce
+																		and m.sender = Alice and m.reciever = Eve 
+																		and m.payload = mAlice.payload.decodedNonce 
+																		and m.encrypted = Eve.publicKey
+								    									and Eve.messagesReceived.(time12) in Eve.messagesReceived.(time13) 
+																		and m in  Eve.messagesReceived.(time13) 
 		
 
-		--Eve re-encrypts NB, and convinces B that he's decrypted it
+		let time14 = time13.next {
+		--Eve re-encrypts NB, and convinces B that she's decrypted it
+		some m : Eve.messagesReceived.(time14) | 
+																		m.sender = Eve and m.reciever = Bob
+																		and m.payload = Bob.nonce
+		
+		}}}}}}}}}}}}
 }
 
 --- TRACE ---
@@ -225,12 +207,13 @@ pred MitM(pre, post: Time) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	ExchangeKey[first, first.next, Alice, Bob]
-	all t : Time - last | let t' = t.next | 
+	--ExchangeKey[first, first.next, Alice, Bob]
+	MitM[first, first.next, Eve, Bob, Alice]
+	let t = first.next.next.next.next.next.next.next.next | let t' = t.next | 
 		some disj u1, u2 : User | some m : Message |
 		SendMessage[t, t', u1, u2, m]
 }
 
 --- RUN ---
 
-run {} for 12 Time, 24 Message, 24 SendableValue,  4 Request
+run {} for 18 Time, 24 Message, 24 SendableValue,  4 Request
