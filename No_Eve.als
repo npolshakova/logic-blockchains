@@ -173,8 +173,8 @@ fact Traces {
 	-- INITIAL STATE
 	first.init 
 	ExchangeKey[first, first.next, Alice, Bob]
-	--MitM[first, first.next]
-	all t : Time - last | let t' = t.next | 
+	-- key exchange finishes at time = 8
+	let t = first.next.next.next.next.next.next.next.next | let t' = t.next | 
 		some disj u1, u2 : User | some m : Message |
 		SendMessage[t, t', u1, u2, m]
 }
