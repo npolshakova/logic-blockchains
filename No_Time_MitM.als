@@ -197,9 +197,8 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 
 		let msg8 = msg7.next {
 		--Eve relays the message to B, pretending that A is communicating:
-		-- TODO: Alice.nonce decoded
-		msg8.sender = normalUser and msg8.reciever = victim and msg8.payload = normalUser.nonce
-									and msg8.encrypted =attacker.contactList[victim].first
+		msg8.sender = normalUser and msg8.reciever = victim and msg8.payload = msg3.payload
+									and msg8.encrypted =attacker.contactList[victim].msg8
 
 		let msg9 = msg8.next {	
 		--B now knows A wants to communicate, so B requests A's public keys.
@@ -216,7 +215,6 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 									and p.newNonce = victim.nonce
 									and msg11.sender = victim and msg11.reciever = attacker 
 									and msg11.payload =  p and msg11.encrypted = victim.contactList.msg11[normalUser] 
-
 
 		let msg12 = msg11.next {
 		--Eve relays NB to A
@@ -237,7 +235,7 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 		--Eve re-encrypts NB, and sends it to Bob
 			msg14.sender = attacker and msg14.reciever = victim
 			and msg14.payload = msg13.payload
-		
+
 		-- Eve  convinces B that she's decrypted it
 		msg14.payload = victim.nonce
 		
