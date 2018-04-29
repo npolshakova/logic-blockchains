@@ -17,21 +17,45 @@ Presented by:
 npolshak, lc50     
 
 
------------------------------------------Our Files-----------------------------------------
+-----------------------------Needham-Schroeder Key-Exchange Files----------------------------
 
-No_Eve.als: The Needham-Schroeder key-exchange with no attacker, Eve. This illustrates a 
-normal key change between two users, Alice an Bob.
+No_Time_No_Eve.als: The Needham-Schroeder key-exchange with no attacker, Eve. This 
+illustrates a normal key change between two users, Alice an Bob. In this version the steps 
+are based on messages sent. The message sig has an ordering because it is assumed only one
+message is sent at a given time. 
 
-MitM.als: This shows the Man in the Middle Attacker with the Needham-Schroeder key-exchange
-where Eve pretends to be Alice to Bob.
+No_Time_MitM.als: This shows the Man in the Middle Attacker with the Needham-Schroeder 
+key-exchange where Eve pretends to be Alice to Bob. In this version the steps are based on
+messages sent. The message sig has an ordering because it is assumed only one message is sent
+at a given time. 
 
-Fixed.als: This shows how the Man in the Middle Attacker can be fixed by changing the
+No_Time_Fixed.als: This shows how the Man in the Middle Attacker can be fixed by changing the
 message payload to include the sender's information and a fact to check that this is valid.
-Normal key exchange still works here, but the MitM attack will result in no instances.
+Normal key exchange still works here, but the MitM attack will result in no instances. In 
+this version the steps are based on messages sent. The message sig has an ordering because it
+is assumed only one message is sent at a given time. 
+
+(old) Time_No_Eve.als: The Needham-Schroeder key-exchange with no attacker, Eve. This 
+illustrates a normal key change between two users, Alice an Bob. This version has a 
+Time sig which is used to determine when messages are sent and recieved. 
+
+(old) Time_MitM.als: This shows the Man in the Middle Attacker with the Needham-Schroeder
+key-exchange where Eve pretends to be Alice to Bob. This version has a Time sig which is
+used to determine when messages are sent and recieved. 
+
+(old) Time_Fixed.als: This shows how the Man in the Middle Attacker can be fixed by changing 
+the message payload to include the sender's information and a fact to check that this is valid.
+Normal key exchange still works here, but the MitM attack will result in no instances. This 
+version has a Time sig which is used to determine when messages are sent and recieved. 
+
+
+--------------------------------------Blockchain Files--------------------------------------
 
 Blockchain.als:
 
---------------------------------------------------------------------------------------------
+--------------------------------------Blockchain Files--------------------------------------
+
+
 
 quu..__
  $$$b  `---.__

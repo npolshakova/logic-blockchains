@@ -57,8 +57,9 @@ abstract sig Request extends SendableValue {
 	requestedContact: one User
 }
 
+-- UPDATED verifiedSender fact
 fact {
-		all m : Message | m.sender != m.reciever
+		all m : Message | m.sender != m.reciever and m.payload.verifiedSender = m.sender
 }
 
 --- EVENTS ---
@@ -256,10 +257,8 @@ fact Traces {
 		SendMessage[u1, u2, m]
 }
 
---- Fact: Check sender
-fact Sender {
-	all m : Message | m.payload.verifiedSender = m.sender
-}
+check fixedKeyExchangeWorks {not MitM[first, Eve, Bob, Alice]} for 20 Message, 20 SendableValue,  4 Request
+check fixedNoMitM {ExchangeKey[first, Alice, Bob]}  for 20 Message, 20 SendableValue,  4 Request
 
 --- RUN ---
 
