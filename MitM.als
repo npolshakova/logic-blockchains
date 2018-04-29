@@ -167,11 +167,10 @@ pred SendMessage(pre, post: Time, s, r: User, m : Message) {
 --At the end of the attack, B falsely believes that A is communicating with him, and that NA and NB are known only to A and B.
 pred MitM(pre, post: Time) {	
 		--A sends NA to Eve, who decrypts the message with private key of Eve
-		-- A send S request for B key
 		requestFromServer[pre, post, Eve, Alice]
 
 		-- S responds with Eve's public key and identity, signed with server's private key
-		-- A verifying S's message with public key and Takes Eve's public key and stores it 
+		-- A verifying S's message with public key and takes Eve's public key and stores it 
 		responseFromServer[post, post.next, Eve, Alice]
 
 		-- A sends Eve a random N initiating contact
@@ -181,43 +180,58 @@ pred MitM(pre, post: Time) {
 		requestFromServer[post.next.next, post.next.next.next, Alice, Eve]
 
 		-- S responds with A's public key and identity, signed with server's private key
-		-- B verifying S's message with public key and Takes A's public key and stores it 
+		-- Eve verifying S's message with public key and Takes A's public key and stores it 
 		responseFromServer[post.next.next.next, post.next.next.next.next, Alice, Eve]
 
-		
 		-- Eve send S request for B key
-		requestFromServer[pre, post, Bob, Eve]
+		requestFromServer[post.next.next.next.next, post.next.next.next.next.next, Bob, Eve]
 
 		-- S responds with B's public key and identity, signed with server's private key
 		-- Eve verifying S's message with public key and Takes B's public key and stores it 
-		responseFromServer[post, post.next, Bob, Eve]
+		responseFromServer[post.next.next.next.next.next, post.next.next.next.next.next.next, Bob, Eve]
 
 		--Eve relays the message to B, pretending that A is communicating:
+		-- TODO: Alice.nonce decoded
 		some m : Message | m.sender = Alice and m.reciever = Bob and m.payload = Alice.nonce
-									and m.encrypted = Eve.contactList[Bob].post
+									and m.encrypted = Eve.contactList[Bob].(post.next.next.next.next.next.next)
 
 		--B now knows A wants to communicate, so B requests A's public keys.
-		requestFromServer[post.next.next, post.next.next.next, Alice, Bob]
+		requestFromServer[post.next.next.next.next.next.next.next, post.next.next.next.next.next.next.next.next, Alice, Bob]
 
 		-- S responds with A's public key and identity, signed with server's private key
 		-- B verifying S's message with public key and Takes A's public key and stores it 
-		responseFromServer[post.next.next.next, post.next.next.next.next, Alice, Bob]
+		responseFromServer[post.next.next.next.next.next.next.next.next, post.next.next.next.next.next.next.next.next.next, Alice, Bob]
 
 		--B sends NB
 		some m : Message | some p : ProofNonce | p.decodedNonce = Bob.messagesReceived.post.payload 
 									and p.newNonce = Bob.nonce
 									and m.sender = Bob and m.reciever = Eve 
 									and m.payload =  p and m.encrypted = Eve.publicKey
-								    and Eve.messagesReceived.(pre.next.next.next.next.next) in Eve.messagesReceived.(post.next.next.next.next.next) 
-									and m in  Eve.messagesReceived.(post.next.next.next.next.next) 
+								    and Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next) in Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next) 
+									and m in  Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next) 
 
-		--Eve relays it to A
-		
+		--Eve relays NB to A
+		some m : Message | some mBob : Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next) | 
+										m.payload = mBob.payload
+										and m.sender = Eve and m.reciever = Alice and m.encrypted = Alice.publicKey
 
 		--A decrypts NB and confirms it to Eve, who learns it
+		some m : Message| some mAlice : Alice.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next) | 
+																		canDecode[Alice, mAlice] 
+																		and mAlice.payload.decodedNonce = Bob.nonce
+																		and m.sender = Alice and m.reciever = Eve 
+																		and m.payload = mAlice.payload.decodedNonce 
+																		and m.encrypted = Eve.publicKey
+								    									and Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next) in Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next) 
+																		and m in  Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next.next) 
 		
 
-		--Eve re-encrypts NB, and convinces B that he's decrypted it
+		--Eve re-encrypts NB, and convinces B that she's decrypted it
+		some m : Eve.messagesReceived.(post.next.next.next.next.next.next.next.next.next.next.next.next) | 
+																		m.sender = Eve and m.reciever = Bob
+																		and m.payload = Bob.nonce
+		
+		
 }
 
 --- TRACE ---
@@ -225,7 +239,7 @@ pred MitM(pre, post: Time) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	ExchangeKey[first, first.next, Alice, Bob]
+	MitM[first, first.next]
 	all t : Time - last | let t' = t.next | 
 		some disj u1, u2 : User | some m : Message |
 		SendMessage[t, t', u1, u2, m]
@@ -233,4 +247,4 @@ fact Traces {
 
 --- RUN ---
 
-run {} for 12 Time, 24 Message, 24 SendableValue,  4 Request
+run {} for 18 Time, 24 Message, 24 SendableValue,  4 Request
