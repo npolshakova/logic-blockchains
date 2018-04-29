@@ -155,7 +155,6 @@ pred ExchangeKey(msg1: Message, user1, user2 : User) {
 pred SendMessage(s, r: User, m : Message) {	
 		m.sender = s
 		m.reciever = r 
-		m.encrypted = r.publicKey
 }
 
 --- TRACE ---

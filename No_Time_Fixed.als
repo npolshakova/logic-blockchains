@@ -3,7 +3,11 @@ open util/ordering[Message] -- message dependent
 
 -- SENDABLE VALUES (KEYS) ---
 
-abstract sig SendableValue {}
+-- UPDATE: Add verifiedSender to all sendable values
+abstract sig SendableValue {
+	verifiedSender: one User 
+}
+
 abstract sig Key extends SendableValue {}
 
 -- random N
@@ -246,10 +250,15 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	MitM[first, Eve, Bob, Alice]
-	--ExchangeKey[first, Alice, Bob]
+	--MitM[first, Eve, Bob, Alice]
+	ExchangeKey[first, Alice, Bob]
 	all m : Message | some disj u1, u2 : User |
 		SendMessage[u1, u2, m]
+}
+
+--- Fact: Check sender
+fact Sender {
+	all m : Message | m.payload.verifiedSender = m.sender
 }
 
 --- RUN ---
