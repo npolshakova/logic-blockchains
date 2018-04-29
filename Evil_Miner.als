@@ -42,6 +42,10 @@ sig Miner extends Person {
 	power: Int
 }
 
+sig EvilMiner extends Miner {
+
+}
+
 sig User extends Person {
 	transactions: seq Transaction
 }
@@ -115,4 +119,22 @@ fact MinerProperties {
 	all m: Miner | m.power > 0 and #{miner.m} = m.power
 }
 
-run {}  for 12 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 6 Transaction
+fact EvilMinerProperties {
+	EvilMiner.power = 6
+
+	some b: Block, f: Fork | b.miner = EvilMiner and b in f.head.child and #{ f.chain } > 4
+
+	all f1: Fork | EvilMiner in (f1.head.child & f1.chain).miner implies (some f2: Fork | f1.head = f2.head and f1 != f2 implies not EvilMiner in f2.chain.miner)
+
+	-- evil miner wants to split early
+	Fork.head in Blockchain.initial.child
+
+	
+}
+
+assert EvilMinerAttackSuccess {
+	all disj f1, f2: Fork | EvilMiner not in (f1.head.child & f1.chain).miner and EvilMiner in (f2.head.child & f2.chain).miner implies #{ f2.chain } > #{ f1.chain }
+}
+
+check EvilMinerAttackSuccess for 10 Block, 10 Time, 2 Fork, 2 Miner, 1 User, 1 Value, 2 Transaction
+//run {EvilMiner}  for 10 Block, 10 Time, 2 Fork, 2 Miner, 1 User, 1 Value, 2 Transaction
