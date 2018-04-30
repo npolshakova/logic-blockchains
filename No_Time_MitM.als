@@ -255,8 +255,8 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	MitM[first, Eve, Bob, Alice]
-	--ExchangeKey[first, Alice, Bob]
+	MitM[first, Eve, Bob, Alice] 
+	--ExchangeKey[first, Alice, Bob] -- Still works
 	all m : Message | some disj u1, u2 : User |
 		SendMessage[u1, u2, m]
 }

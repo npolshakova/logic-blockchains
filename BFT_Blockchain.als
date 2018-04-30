@@ -61,8 +61,10 @@ sig Transaction {
 
 pred init(t:Time) {
 
+	-- only the initial block is in the blockchain
 	t.blocks = Blockchain.initial
 
+	-- initial block has no parent but has children
 	no Blockchain.initial.parent
 	some Blockchain.initial.child
 

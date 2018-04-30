@@ -8,24 +8,19 @@ sig Block {
 	parent: lone Block,
 	child: set Block,
 	payload: set Transaction,
-	//hash: one Hash,
-	//capacity: Int,
 	timestamp: one Time,
 	miner: one Miner
 }
 
+-- Malicious block with double spending
 one sig BadBlock extends Block {}
 
+-- Double spending transaction properties
 fact badBlockProperties {
 	SameTransaction[BadBlock]
 	BadBlock != Blockchain.initial
 }
 
-/*sig Hash {
-	prev: one Hash,
-	payload: seq Transaction,
-	signature: one Key
-}*/
 
 -- subchain of the entire blockchain
 sig Fork {
@@ -38,11 +33,11 @@ one sig Blockchain {
 	initial: one Block
 }
 
-/*sig Key {}*/
+sig Key {}
 
 abstract sig Person {
-	/*publicKey: one Key,
-	privateKey: one Key*/
+	publicKey: one Key,
+	privateKey: one Key
 }
 
 sig Miner extends Person {
@@ -70,11 +65,11 @@ sig Transaction {
 }
 
 pred init(t:Time) {
-	
-	--Blockchain.blocks in Blockchain.initial
 
+	-- only the initial block is in the blockchain
 	t.blocks = Blockchain.initial
 
+	-- initial block has no parent but has children
 	no Blockchain.initial.parent
 	some Blockchain.initial.child
 }
@@ -146,4 +141,4 @@ fact MinerProperties {
 	all m: Miner | m.money.Time >= 0 and #{miner.m} = m.money.first
 }
 
-run {}  for 14 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 6 Transaction, 4 Int
+run {}  for 14 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 6 Transaction, 5 Key, 4 Int
