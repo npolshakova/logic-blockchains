@@ -92,17 +92,22 @@ fact Trace {
 }
 
 fact BlockProperties {
+	-- except the initial block, all blocks have one parent and is in the blockchain
 	all b: Block - Blockchain.initial | one b.parent and b in Blockchain.initial.^child
 
+	-- a parent of a block can't be that block's child, and vice versa
 	all b: Block | some b.parent implies b.parent not in b.child 
 						and some b.child implies b.child not in b.parent	-- parent cannot be a child of the same block
 	
+	-- reflexive property of the parent-child relationship
 	all disj b1, b2: Block | (b1 in b2.parent implies b2 in b1.child)
 										and (b1 in b2.child implies b2 in b1.parent)
 
+	-- no cycles and no self-loops
 	no iden & child.^child
 	no iden & parent.^parent
 
+	-- all blocks are in the blockchain
 	all b: Block | b in Blockchain.blocks
 }
 

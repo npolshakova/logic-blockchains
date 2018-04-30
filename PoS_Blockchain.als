@@ -106,34 +106,43 @@ fact Trace {
 }
 
 fact BlockProperties {
+	-- except the initial block, all blocks have one parent and is in the blockchain
 	all b: Block - Blockchain.initial | one b.parent and b in Blockchain.initial.^child
 
+	-- reflexive property of the parent-child relationship
 	all b: Block | some b.parent implies b.parent not in b.child 
 						and some b.child implies b.child not in b.parent	-- parent cannot be a child of the same block
 	
 	all disj b1, b2: Block | (b1 in b2.parent implies b2 in b1.child)
 										and (b1 in b2.child implies b2 in b1.parent)
 
+	-- no cycles and no self-loops
 	no iden & child.^child
 	no iden & parent.^parent
 
+
+	-- all blocks are in the blockchain
 	all b: Block | b in Blockchain.blocks
 }
 
 fact ForkProperties {
-	-- 
+	-- defines fork head and chain
 	all b: Block | some f: Fork | #{b.parent.child} > 1 iff (f.head = b.parent and f.chain = b.^child + b)
 
+	-- forks occur when there it splits into at least two block
 	no f: Fork | #{ f.head.child } < 2
 
+	-- each block splits into no more than two forks (due to extremely low probability of more than two in practice)
 	all b: Block | b in Fork.head implies #{ head.b } < 3
 
+	-- if there is a fork that's greater than 4 blocks, the alternate fork is abandoned
 	all t: Time, t': t.next | all disj f1, f2: Fork | some b: Block | (b in t'.blocks and b not in t.blocks and b in f1.chain and #{ f1.chain } > 4 and f1.head = f2.head and #{f2.chain} < 4 )
 																			implies { no b2: Block | (b2 in t'.^next.blocks and b2 not in t.blocks) implies b2 in f2.chain } 
 
 }
 
 fact MinerProperties {
+	-- ensures that the number of blocks created by a miner is the same as the miner's power rating
 	all m: Miner | m.money.Time >= 0 and #{miner.m} = m.money.first
 }
 
