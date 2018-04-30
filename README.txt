@@ -46,7 +46,7 @@ used to determine when messages are sent and recieved.
 (old) Time_Fixed.als: This shows how the Man in the Middle Attacker can be fixed by changing 
 the message payload to include the sender's information and a fact to check that this is valid.
 Normal key exchange still works here, but the MitM attack will result in no instances. This 
-version has a Time sig which is used to determine when messages are sent and recieved. 
+version has a Time sig which is used to determine when messages are sent and received. 
 
 
 --------------------------------------Blockchain Files--------------------------------------
