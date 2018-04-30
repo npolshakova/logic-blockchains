@@ -8,17 +8,16 @@ sig Block {
 	parent: lone Block,
 	child: set Block,
 	payload: set Transaction,
-	//hash: one Hash,
-	//capacity: Int,
+	hash: one Hash,
 	timestamp: one Time,
 	miner: one Miner
 }
 
-/*sig Hash {
+sig Hash {
 	prev: one Hash,
 	payload: seq Transaction,
 	signature: one Key
-}*/
+}
 
 -- subchain of the entire blockchain
 sig Fork {

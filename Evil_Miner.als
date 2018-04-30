@@ -88,14 +88,18 @@ fact Trace {
 }
 
 fact BlockProperties {
+	-- 
 	all b: Block - Blockchain.initial | one b.parent and b in Blockchain.initial.^child
 
+	--
 	all b: Block | some b.parent implies b.parent not in b.child 
 						and some b.child implies b.child not in b.parent	-- parent cannot be a child of the same block
 	
+	-- 
 	all disj b1, b2: Block | (b1 in b2.parent implies b2 in b1.child)
 										and (b1 in b2.child implies b2 in b1.parent)
 
+	-- no cycles and no self-loops
 	no iden & child.^child
 	no iden & parent.^parent
 
@@ -103,20 +107,24 @@ fact BlockProperties {
 }
 
 fact ForkProperties {
-	-- 
+	-- defines fork head and chain
 	all b: Block | some f: Fork | #{b.parent.child} > 1 iff (f.head = b.parent and f.chain = b.^child + b)
 
+	-- forks occur when there it splits into at least two block
 	no f: Fork | #{ f.head.child } < 2
 
+	-- each block splits into no more than two forks (due to extremely low probability of more than two in practice)
 	all b: Block | b in Fork.head implies #{ head.b } < 3
 
-	all t: Time, t': t.next | all disj f1, f2: Fork | some b: Block | (b in t'.blocks and b not in t.blocks and b in f1.chain and #{ f1.chain } > 4 and f1.head = f2.head and #{f2.chain} < 4 )
-																			implies { no b2: Block | (b2 in t'.^next.blocks and b2 not in t.blocks) implies b2 in f2.chain } 
+	-- 
+	all t: Time, t': t.next | all disj f1, f2: Fork | some b: Block | (b in t'.blocks and b not in t.blocks and b in f1.chain 
+																							and #{ f1.chain } > 4 and f1.head = f2.head and #{f2.chain} < 4 )
+																							implies { no b2: Block | (b2 in t'.^next.blocks and b2 not in t.blocks) implies b2 in f2.chain } 
 
 }
 
 fact MinerProperties {
-	-- 
+	-- ensures that the number of blocks created by a miner is the same as the miner's power rating
 	all m: Miner | m.power > 0 and #{miner.m} = m.power
 }
 
@@ -124,10 +132,10 @@ pred EvilMinerProperties {
 	-- an evil miner has 60% of the mining power in the system
 	EvilMiner.power = 6
 
-	-- There is some fork that the evil miner creates and the fork is longer than 4 blocks
+	-- there is some fork that the evil miner creates and the fork is longer than 4 blocks
 	some b: Block, f: Fork | b.miner = EvilMiner and b in f.head.child and #{ f.chain } > 4
 
-	-- If an evil miner creates a fork, then they do not mine blocks for other corresponding forks
+	-- if an evil miner creates a fork, then they do not mine blocks for other corresponding forks
 	all disj f1, f2: Fork | EvilMiner in (f1.head.child & f1.chain).miner implies not EvilMiner in f2.chain.miner
 
 	-- evil miner wants to split early
@@ -135,7 +143,7 @@ pred EvilMinerProperties {
 }
 
 pred EvilMinerAttackSuccess {
-	-- The fork that an evil miner creates must be longer than forks created by other users
+	-- the fork that an evil miner creates must be longer than forks created by other users
 	all disj f1, f2: Fork | EvilMiner not in (f1.head.child & f1.chain).miner and EvilMiner in (f2.head.child & f2.chain).miner 
 									implies #{ f2.chain } > #{ f1.chain }
 }
