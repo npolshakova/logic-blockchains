@@ -10,8 +10,6 @@ sig Block {
 	parent: lone Block,
 	child: set Block,
 	payload: set Transaction,
-	//hash: one Hash,
-	//capacity: Int,
 	timestamp: one Time,
 	validator: one Validator, -- who ever proposed the block
 	votes: set Validator
@@ -47,17 +45,17 @@ fact ValidatorProperties {
 	all b : Block | some v : Validator | b.validator = v and v in b.votes
 }
 
---sig User extends Person {
-	--transactions: seq Transaction
---}
+sig User extends Person {
+	transactions: seq Transaction
+}
 
 sig Value {}
 
 sig Transaction {
 	timestamp: one Time,
 	payload: one Value,
-	--sender: one User,	
-	--receiver: lone User -- doesn't necessarily need a receiver
+	sender: one User,	
+	receiver: lone User -- doesn't necessarily need a receiver
 }
 
 pred init(t:Time) {
@@ -76,10 +74,10 @@ fact Trace {
 
 	-- Propose block, vote block, if 2/3s majority, add block in
 	all t: Time, t': t.next | some v : Validator | 
-																(#{v.proposedBlock.votes} >  6) implies
-																v.proposedBlock not in t.blocks
-																and t'.blocks = t.blocks + v.proposedBlock 
-																and v.proposedBlock in t.blocks.child
+									(#{v.proposedBlock.votes} >  3) implies -- Greater than 3/5 yes votes
+									(v.proposedBlock not in t.blocks 
+									and t'.blocks = t.blocks + v.proposedBlock 
+									and v.proposedBlock in t.blocks.child)
 
 	-- ensures that block timestamps correspond to their respective time
 	all b: Block, t: Time, t': t.next | b.timestamp = t' iff (b in t'.blocks and b not in t.blocks)
@@ -110,4 +108,4 @@ fact BlockProperties {
 
 
 
-run {}  for 10 Block, 10 Time, 5 Validator, 1 Value, 6 Transaction
+run {}  for 10 Block, 10 Time, 5 Validator, 1 User, 1 Value, 6 Transaction
