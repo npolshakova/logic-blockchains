@@ -116,25 +116,28 @@ fact ForkProperties {
 }
 
 fact MinerProperties {
+	-- 
 	all m: Miner | m.power > 0 and #{miner.m} = m.power
 }
 
 pred EvilMinerProperties {
-
-	-- an evil miner has 
+	-- an evil miner has 60% of the mining power in the system
 	EvilMiner.power = 6
 
+	-- There is some fork that the evil miner creates and the fork is longer than 4 blocks
 	some b: Block, f: Fork | b.miner = EvilMiner and b in f.head.child and #{ f.chain } > 4
 
+	-- If an evil miner creates a fork, then they do not mine blocks for other corresponding forks
 	all disj f1, f2: Fork | EvilMiner in (f1.head.child & f1.chain).miner implies not EvilMiner in f2.chain.miner
+
 	-- evil miner wants to split early
 	Fork.head in Blockchain.initial.child
-
-	
 }
 
 pred EvilMinerAttackSuccess {
-	all disj f1, f2: Fork | EvilMiner not in (f1.head.child & f1.chain).miner and EvilMiner in (f2.head.child & f2.chain).miner implies #{ f2.chain } > #{ f1.chain }
+	-- The fork that an evil miner creates must be longer than forks created by other users
+	all disj f1, f2: Fork | EvilMiner not in (f1.head.child & f1.chain).miner and EvilMiner in (f2.head.child & f2.chain).miner 
+									implies #{ f2.chain } > #{ f1.chain }
 }
 
 check {EvilMinerProperties implies EvilMinerAttackSuccess} for 10 Block, 10 Time, 2 Fork, 2 Miner, 1 User, 1 Value, 2 Transaction
