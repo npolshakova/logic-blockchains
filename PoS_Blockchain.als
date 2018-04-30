@@ -8,24 +8,19 @@ sig Block {
 	parent: lone Block,
 	child: set Block,
 	payload: set Transaction,
-	//hash: one Hash,
-	//capacity: Int,
 	timestamp: one Time,
 	miner: one Miner
 }
 
+-- Malicious block with double spending
 one sig BadBlock extends Block {}
 
+-- Double spending transaction properties
 fact badBlockProperties {
 	SameTransaction[BadBlock]
 	BadBlock != Blockchain.initial
 }
 
-/*sig Hash {
-	prev: one Hash,
-	payload: seq Transaction,
-	signature: one Key
-}*/
 
 -- subchain of the entire blockchain
 sig Fork {
@@ -38,11 +33,11 @@ one sig Blockchain {
 	initial: one Block
 }
 
-/*sig Key {}*/
+sig Key {}
 
 abstract sig Person {
-	/*publicKey: one Key,
-	privateKey: one Key*/
+	publicKey: one Key,
+	privateKey: one Key
 }
 
 sig Miner extends Person {
@@ -70,11 +65,11 @@ sig Transaction {
 }
 
 pred init(t:Time) {
-	
-	--Blockchain.blocks in Blockchain.initial
 
+	-- only the initial block is in the blockchain
 	t.blocks = Blockchain.initial
 
+	-- initial block has no parent but has children
 	no Blockchain.initial.parent
 	some Blockchain.initial.child
 }
@@ -106,35 +101,44 @@ fact Trace {
 }
 
 fact BlockProperties {
+	-- except the initial block, all blocks have one parent and is in the blockchain
 	all b: Block - Blockchain.initial | one b.parent and b in Blockchain.initial.^child
 
+	-- reflexive property of the parent-child relationship
 	all b: Block | some b.parent implies b.parent not in b.child 
 						and some b.child implies b.child not in b.parent	-- parent cannot be a child of the same block
 	
 	all disj b1, b2: Block | (b1 in b2.parent implies b2 in b1.child)
 										and (b1 in b2.child implies b2 in b1.parent)
 
+	-- no cycles and no self-loops
 	no iden & child.^child
 	no iden & parent.^parent
 
+
+	-- all blocks are in the blockchain
 	all b: Block | b in Blockchain.blocks
 }
 
 fact ForkProperties {
-	-- 
+	-- defines fork head and chain
 	all b: Block | some f: Fork | #{b.parent.child} > 1 iff (f.head = b.parent and f.chain = b.^child + b)
 
+	-- forks occur when there it splits into at least two block
 	no f: Fork | #{ f.head.child } < 2
 
+	-- each block splits into no more than two forks (due to extremely low probability of more than two in practice)
 	all b: Block | b in Fork.head implies #{ head.b } < 3
 
+	-- if there is a fork that's greater than 4 blocks, the alternate fork is abandoned
 	all t: Time, t': t.next | all disj f1, f2: Fork | some b: Block | (b in t'.blocks and b not in t.blocks and b in f1.chain and #{ f1.chain } > 4 and f1.head = f2.head and #{f2.chain} < 4 )
 																			implies { no b2: Block | (b2 in t'.^next.blocks and b2 not in t.blocks) implies b2 in f2.chain } 
 
 }
 
 fact MinerProperties {
+	-- ensures that the number of blocks created by a miner is the same as the miner's power rating
 	all m: Miner | m.money.Time >= 0 and #{miner.m} = m.money.first
 }
 
-run {}  for 14 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 6 Transaction, 4 Int
+run {}  for 14 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 6 Transaction, 5 Key, 4 Int

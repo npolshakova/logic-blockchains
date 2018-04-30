@@ -65,7 +65,14 @@ even if their fork is malicious.
 fault tolerant protocol with a consensus based block addition based off of the Tendermint protocol. 
 It works by separating time units into voting periods. In each voting period, a validator (the equivalent
 of a miner in proof of work) proposes a new block and all the other validators vote on whether to 
-accept that block. A new block is only appended to the blockchain once it gains at least 2/3 of votes. 
+accept that block. A new block is only appended to the blockchain once it gains at least 2/3 of votes.
+
+[Reach goal] PoS_Blockchain.als: *Sort of working" Shows the Proof of Stake protocol in
+a blockchain and punishment protocol for users that double spend. Instead of computational
+power, adding a block to the blockchain is based on a user's money (or "stake") at a 
+specific time. Has a fraudulent block that has two repeating transactions 
+("double spending"). When a user attempts to add the block to the blockchain, their money 
+will go to 0.  
 
 --------------------------------------------------------------------------------------------
 

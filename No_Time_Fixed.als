@@ -260,7 +260,7 @@ pred MitM(msg1 : Message, attacker, victim, normalUser : User) {
 fact Traces {
 	-- INITIAL STATE
 	first.init 
-	--MitM[first, Eve, Bob, Alice]
+	--MitM[first, Eve, Bob, Alice] -- doesn't work anymore
 	ExchangeKey[first, Alice, Bob]
 	all m : Message | some disj u1, u2 : User |
 		SendMessage[u1, u2, m]
