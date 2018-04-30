@@ -90,12 +90,16 @@ pred canDecode(user : User, message : Message) {
 	user.publicKey = message.encrypted
 }
 
+-- The sender (s) requests another user's public key from the server
+-- message is encrypted with server's public key
 pred requestFromServer(m: Message, requested, s: User) {
  		some r : Request |  r.requestedContact = requested and m.sender = s 
 										and m.reciever = Server and m.payload =  r
-										and m.encrypted = s.contactList.first[Server]
+										and m.encrypted = s.contactList.first[Server] 
 }
 
+-- The server responds with the requested contact
+-- This message is signed with the Server's private key for verification
 pred responseFromServer(m : Message, requested, s: User){
 	m.sender = Server
 	m.reciever = s 
@@ -105,6 +109,8 @@ pred responseFromServer(m : Message, requested, s: User){
 	s.contactList.m = s.contactList.m + (requested -> m.payload)
 }
 
+-- The user (s) initiates contact with recieving user (r) by sending a random nonce
+-- encrypted with r's public key
 pred initiateContact(m : Message, s, r : User) {
 	m.sender = s
 	m.reciever = r 
@@ -112,6 +118,7 @@ pred initiateContact(m : Message, s, r : User) {
 	m.encrypted = s.contactList.m[r]
 }
 
+-- The initial key exchange protocol between two users where msg1 is the initial message sent
 pred ExchangeKey(msg1: Message, user1, user2 : User) {
 
 	-- A send S request for B key
@@ -160,6 +167,7 @@ pred ExchangeKey(msg1: Message, user1, user2 : User) {
 	}}}}}}
 }
 
+-- After the key exchange messages are sent between users
 pred SendMessage(s, r: User, m : Message) {	
 		m.sender = s
 		m.reciever = r 
