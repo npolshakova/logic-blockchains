@@ -56,16 +56,17 @@ block addition to a blockchain and proof of work where there are no malicious mi
 miner has a random amount of computational power.
 
 [Target goal] EvilMiner.als: This demonstrates a 51% attack where one miner has over 51% 
-of the computational power in the network. This is modeled as the miner having a computational
-power level of 6 (out of 10). Once a miner has more than 50% of the computational power, it 
-is always possible for them to grow their preferred fork faster than any other alternative forks,
-even if their fork is malicious.
+of the computational power in the network. This is modeled as the miner having a 
+computational power level of 6 (out of 10). Once a miner has more than 50% of the
+computational power, it is always possible for them to grow their preferred fork faster 
+than any other alternative forks, even if their fork is malicious.
 
-[Reach goal] BFT_Blockchain.als: This demonstrates an alternative to proof of work, using a Byzantine 
-fault tolerant protocol with a consensus based block addition based off of the Tendermint protocol. 
-It works by separating time units into voting periods. In each voting period, a validator (the equivalent
-of a miner in proof of work) proposes a new block and all the other validators vote on whether to 
-accept that block. A new block is only appended to the blockchain once it gains at least 2/3 of votes.
+[Reach goal] BFT_Blockchain.als: This demonstrates an alternative to proof of work,
+using a Byzantine fault tolerant protocol with a consensus based block addition based off
+of the Tendermint protocol. It works by separating time units into voting periods. In each
+voting period, a validator (the equivalent of a miner in proof of work) proposes a new 
+block and all the other validators vote on whether to  accept that block. A new block 
+is only appended to the blockchain once it gains at least 2/3 of votes.
 
 [Reach goal] PoS_Blockchain.als: *Sort of working" Shows the Proof of Stake protocol in
 a blockchain and punishment protocol for users that double spend. Instead of computational
@@ -74,7 +75,12 @@ specific time. Has a fraudulent block that has two repeating transactions
 ("double spending"). When a user attempts to add the block to the blockchain, their money 
 will go to 0.  
 
---------------------------------------------------------------------------------------------
+---------------------------------Abstraction Choices You Made---------------------------------
+
+
+
+---------------------------------Outcomes your Model can Show --------------------------------
+
 
 
 
