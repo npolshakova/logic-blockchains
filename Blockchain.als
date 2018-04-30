@@ -123,10 +123,12 @@ fact HashProperties {
 	-- all hashes exist in some block
 	all h: Hash | some b: Block | b.hash = h
 
-	no iden & hashprev.^hashprev
+	no h: Hash | h.hashprev = h
+
+	all disj h1, h2: Hash | h1.hashprev != h2.hashprev
 	
 	-- links previous hashes with previous blocks
---	all h: Hash, b: Block | h in b.hash implies h.prev in b.parent.hash
+	all h: Hash, b: (Block - Blockchain.initial) | h in b.hash implies h.hashprev in b.parent.hash
 }
 
 fact MinerProperties {
