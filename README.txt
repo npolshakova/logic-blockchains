@@ -19,21 +19,21 @@ npolshak, lc50
 
 -----------------------------Needham-Schroeder Key-Exchange Files----------------------------
 
-No_Time_No_Eve.als: The Needham-Schroeder key-exchange with no attacker, Eve. This 
-illustrates a normal key change between two users, Alice an Bob. In this version the steps 
-are based on messages sent. The message sig has an ordering because it is assumed only one
-message is sent at a given time. 
+[Foundation goal] No_Time_No_Eve.als: The Needham-Schroeder key-exchange with no attacker, 
+Eve. This illustrates a normal key change between two users, Alice an Bob. In this version
+the steps are based on messages sent. The message sig has an ordering because it is assumed 
+only one message is sent at a given time. 
 
-No_Time_MitM.als: This shows the Man in the Middle Attacker with the Needham-Schroeder 
-key-exchange where Eve pretends to be Alice to Bob. In this version the steps are based on
-messages sent. The message sig has an ordering because it is assumed only one message is sent
-at a given time. 
+[Target goal] No_Time_MitM.als: This shows the Man in the Middle Attacker with the
+Needham-Schroeder key-exchange where Eve pretends to be Alice to Bob. In this version the
+steps are based on messages sent. The message sig has an ordering because it is assumed only
+one message is sent at a given time. 
 
-No_Time_Fixed.als: This shows how the Man in the Middle Attacker can be fixed by changing the
-message payload to include the sender's information and a fact to check that this is valid.
-Normal key exchange still works here, but the MitM attack will result in no instances. In 
-this version the steps are based on messages sent. The message sig has an ordering because it
-is assumed only one message is sent at a given time. 
+[Target goal] No_Time_Fixed.als: This shows how the Man in the Middle Attacker can be
+fixed by changing the message payload to include the sender's information and a fact to 
+check that this is valid. Normal key exchange still works here, but the MitM attack will
+result in no instances. In this version the steps are based on messages sent. The message 
+sig has an ordering because it is assumed only one message is sent at a given time. 
 
 (old) Time_No_Eve.als: The Needham-Schroeder key-exchange with no attacker, Eve. This 
 illustrates a normal key change between two users, Alice an Bob. This version has a 
@@ -51,14 +51,16 @@ version has a Time sig which is used to determine when messages are sent and rec
 
 --------------------------------------Blockchain Files--------------------------------------
 
-Blockchain.als: Demonstrates forking and blocks being added to a blockchain where no one 
-miners has a compationa
+[Foundation goal] Blockchain.als: Demonstrates forking, block addition to a blockchain and 
+proof of work where no one miners has a computational advantage over other miners. 
 
-EvilMiner.als:
+[Target goal] EvilMiner.als: Demonstrates a 51% attack where one miner has over 51% 
+of the computational power.
 
-BFT_Blockchain.als:
+[Reach goal] BFT_Blockchain.als: Demonstrates Byzantine fault tolerance with a consensus
+based block addition based off of the Tendermint protocol. 
 
---------------------------------------Blockchain Files--------------------------------------
+--------------------------------------------------------------------------------------------
 
 
 
