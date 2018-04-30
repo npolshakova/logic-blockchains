@@ -51,7 +51,12 @@ version has a Time sig which is used to determine when messages are sent and rec
 
 --------------------------------------Blockchain Files--------------------------------------
 
-Blockchain.als:
+Blockchain.als: Demonstrates forking and blocks being added to a blockchain where no one 
+miners has a compationa
+
+EvilMiner.als:
+
+BFT_Blockchain.als:
 
 --------------------------------------Blockchain Files--------------------------------------
 
@@ -97,4 +102,4 @@ quu..__
               `',:                 :    .'
                                    `:.:' 
 
-Filled with po-key-mon fun! Feed us some poke-blockchains. This is really sad...
+Filled with po-key-mon fun! Feed us some poke-blockchains. 
