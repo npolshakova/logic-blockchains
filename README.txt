@@ -58,7 +58,16 @@ proof of work where no one miners has a computational advantage over other miner
 of the computational power.
 
 [Reach goal] BFT_Blockchain.als: Demonstrates Byzantine fault tolerance with a consensus
-based block addition based off of the Tendermint protocol. 
+based block addition based off of the Tendermint protocol. Instead of adding a block based
+on computational power (proof of work), a block is proposed by one of the validators and
+is voted on. When a 2/3 consensus is reached, the block is added to the blockchain.
+
+[Reach goal] PoS_Blockchain.als: *Sort of working" Shows the Proof of Stake protocol in
+a blockchain and punishment protocol for users that double spend. Instead of computational
+power, adding a block to the blockchain is based on a user's money (or "stake") at a 
+specific time. Has a fraudulent block that has two repeating transactions 
+("double spending"). When a user attempts to add the block to the blockchain, their money 
+will go to 0.  
 
 --------------------------------------------------------------------------------------------
 
