@@ -76,6 +76,22 @@ will go to 0.
 
 --------------------------------------------------------------------------------------------
 
+Difficulties:
+
+We experienced problems with buffer overflow as alloy continually gave us a negative value when
+we used the #{} count operator. We fixed this by increasing the scope of the Int in alloy to a 
+higher bit width.
+
+It was also difficult to figure out the exact number we needed for each sig when we tried to run
+our model. We ended up testing different values until it all worked. 
+
+It was also hard to reconcile alloy’s limitations, especially in regards to scope. We ended up 
+discarding a lot of the content that wasn’t necessary for demonstrating the main problems in the 
+model, such as the man-in-the-middle attack in the key exchange and the 51% attack in the blockchain
+model, even though the extra content exists in reality. 
+
+--------------------------------------------------------------------------------------------
+
 
 
 quu..__
