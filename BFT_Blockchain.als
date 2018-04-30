@@ -16,8 +16,6 @@ sig Block {
 	votes: set Validator
 }
 
-
-
 one sig Blockchain {
 	blocks: set Block,
 	initial: one Block
