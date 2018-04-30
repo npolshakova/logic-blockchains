@@ -1,3 +1,5 @@
+-- Foundation goal for the Blockchain section
+
 open util/ordering[Time] -- time dependent
 
 sig Time {
@@ -15,8 +17,8 @@ sig Block {
 
 sig Hash {
 	hashprev: one Hash,
-	payload: seq Transaction
-	//signature: one Key
+	payload: seq Transaction,
+	signature: one Key
 }
 
 -- subchain of the entire blockchain
@@ -30,11 +32,11 @@ one sig Blockchain {
 	initial: one Block
 }
 
-//sig Key {}
+sig Key {}
 
 abstract sig Person {
-	//publicKey: one Key,
-	//privateKey: one Key
+	publicKey: one Key,
+	privateKey: one Key
 }
 
 sig Miner extends Person {
@@ -123,12 +125,19 @@ fact HashProperties {
 	-- all hashes exist in some block
 	all h: Hash | some b: Block | b.hash = h
 
+	-- no hash self-loops
 	no h: Hash | h.hashprev = h
 
+	-- hashes don't have the same previous hash
 	all disj h1, h2: Hash | h1.hashprev != h2.hashprev
 	
 	-- links previous hashes with previous blocks
 	all h: Hash, b: (Block - Blockchain.initial) | h in b.hash implies h.hashprev in b.parent.hash
+}
+
+fact TransactionProperties {
+	-- all transactions exist in some block
+	all t: Transaction | some b: Block | t in b.payload
 }
 
 fact MinerProperties {
@@ -136,4 +145,4 @@ fact MinerProperties {
 	all m: Miner | m.power > 0 and #{miner.m} = m.power
 }
 
-run {}  for 12 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 12 Hash, 6 Transaction, 6 Int
+run {}  for 12 Block, 12 Time, 10 Fork, 4 Miner, 1 User, 1 Value, 12 Hash, 12 Transaction, 5 Key, 6 Int
