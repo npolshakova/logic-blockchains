@@ -1,3 +1,5 @@
+-- Target goal for the Blockchain section
+
 open util/ordering[Time] -- time dependent
 
 sig Time {
@@ -8,17 +10,9 @@ sig Block {
 	parent: lone Block,
 	children: set Block,
 	payload: set Transaction,
-	//hash: one Hash,
-	//capacity: Int,
 	timestamp: one Time,
 	miner: one Miner
 }
-
-/*sig Hash {
-	prev: one Hash,
-	payload: seq Transaction,
-	signature: one Key
-}*/
 
 -- subchain of the entire blockchain
 sig Fork {
@@ -31,12 +25,7 @@ one sig Blockchain {
 	initial: one Block
 }
 
-/*sig Key {}*/
-
-abstract sig Person {
-	/*publicKey: one Key,
-	privateKey: one Key*/
-}
+abstract sig Person {}
 
 sig Miner extends Person {
 	power: Int

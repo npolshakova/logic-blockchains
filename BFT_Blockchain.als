@@ -1,3 +1,4 @@
+-- Reach goal for the Blockchain section
 -- Based on Tendermint consensus protocol: https://tendermint.com/static/docs/tendermint.pdf
  
 open util/ordering[Time] -- time dependent
