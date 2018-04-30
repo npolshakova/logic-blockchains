@@ -158,6 +158,7 @@ pred ExchangeKey(msg1: Message, user1, user2 : User) {
 pred SendMessage(s, r: User, m : Message) {	
 		m.sender = s
 		m.reciever = r 
+		m.encrypted = s.privateKey or m.encrypted = r.publicKey
 }
 
 --At the end of the attack, B falsely believes that A is communicating with him,
