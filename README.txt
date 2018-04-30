@@ -77,12 +77,23 @@ will go to 0.
 
 ---------------------------------Abstraction Choices You Made---------------------------------
 
+Key Exchange:
+
+Alice, Bob, Eve and the Server are abstracted out to be User sigs because they all require
+common features (a contact list, private/public keys, etc) and are able to perform the similar
+actions (send messages).
+
+Keys, nonces, user requests are all abstracted out to be sendable values because each message
+can have a payload that represents different things (some messages contain user info,
+others nonces, others have proof of decoded nonces).
 
 
 ---------------------------------Outcomes your Model can Show --------------------------------
 
+Keys: Our model can show normal key exchange, the MitM attack with Eve and the fixed version
+of MitM. 
 
-Difficulties:
+---------------------------------------Difficulties-------------------------------------------
 
 We experienced problems with buffer overflow as alloy continually gave us a negative value when
 we used the #{} count operator. We fixed this by increasing the scope of the Int in alloy to a 
@@ -93,8 +104,12 @@ our model. We ended up testing different values until it all worked.
 
 It was also hard to reconcile alloy’s limitations, especially in regards to scope. We ended up 
 discarding a lot of the content that wasn’t necessary for demonstrating the main problems in the 
-model, such as the man-in-the-middle attack in the key exchange and the 51% attack in the blockchain
-model, even though the extra content exists in reality. 
+model, such as the man-in-the-middle attack in the key exchange and the 51% attack in the
+blockchain model, even though the extra content exists in reality. 
+
+Alloy also is unable to have probabilities and random values specified so we had to use a
+work around and base out probabilities for proof of work on the any values within a certain
+range depending on number of blocks. 
 
 --------------------------------------------------------------------------------------------
 
